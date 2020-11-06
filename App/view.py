@@ -51,3 +51,56 @@ operación seleccionada.
 """
 Menu principal
 """
+
+# ___________________________________________________
+#  Menu principal
+# ___________________________________________________
+
+
+def printMenu():
+    print("\n")
+    print("*******************************************")
+    print("Bienvenido")
+    print("1- Inicializar Analizador")
+    print("2- ")
+    print("3- ")
+    print("4- ")
+    print("5- ")
+    print("6- ")
+    print("7- ")
+    print("8- ")
+    print("9-")
+    print("0- Salir")
+    print("*******************************************")
+
+
+"""
+Menu principal
+"""
+while True:
+    printMenu()
+    inputs = input('Seleccione una opción para continuar\n>')
+
+    if int(inputs[0]) == 1:
+        pass
+        
+
+    elif int(inputs[0]) == 2:
+        pass
+
+
+    elif int(inputs[0]) == 3:
+        pass
+
+    elif int(inputs[0]) == 4:
+        pass
+        
+
+    elif int(inputs[0]) == 5:
+        pass
+
+    elif int(inputs[0]) == 7:
+        pass
+
+    elif int(inputs[0]) == 8:
+        pass
