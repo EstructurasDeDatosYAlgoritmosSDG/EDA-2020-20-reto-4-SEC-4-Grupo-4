@@ -41,12 +41,95 @@ de creacion y consulta sobre las estructuras de datos.
 # -----------------------------------------------------
 #                       API
 # -----------------------------------------------------
+def newAnalyzer():
+    """ Inicializa el analizador
+
+   estaciones: Tabla de hash para guardar los vertices del grafo
+   conecciones: Grafo para representar las rutas entre estaciones
+    """
+    try:
+        analyzer = {
+                    'conecciones': None
+                    }
+
+        analyzer['conecciones'] = gr.newGraph(datastructure='ADJ_LIST',
+                                              directed=True,
+                                              size=14000,
+                                              comparefunction=compareStopIds)
+        return analyzer
+    except Exception as exp:
+        error.reraise(exp, 'model:newAnalyzer')
 
 # Funciones para agregar informacion al grafo
+
+def addTrip(citybike, trip):
+    """
+    Adiciona las estaciones al grafo como vertices y arcos entre las
+    estaciones adyacentes.
+
+    Los vertices tienen por nombre el identificador de la estacion
+    seguido de la ruta que sirve.  Por ejemplo:
+
+    75009-10
+
+    Si la estacion sirve otra ruta, se tiene: 75009-101
+    """
+    try:
+        origen = trip['start station id']
+        destino = trip['end station id']
+        duracion = int(trip['tripduration'])
+        addStation(citybike, origen)
+        addStation(citybike, destino)
+        addConection(citybike, origen, destino, duracion)
+        return citybike
+    except Exception as exp:
+        error.reraise(exp, 'model:addStopConnection')
+
+def addStation(citybike, stationId):
+    """
+    Adiciona una estacion como un vertice de un grafo
+    """
+    if not gr.containsVertex(citybike['conecciones'], stationId):
+        gr.insertVertex(citybike['conecciones'], stationId)
+    return citybike
+
+def addConection(citybike, origen, destino, duracion):
+    """
+    Adiciona un arco entre dos estaciones
+    """
+    arco = gr.getEdge(citybike['conecciones'], origen, destino)
+    if arco is None:
+        gr.addEdge(citybike['conecciones'],origen, destino, duracion)
+    else:
+        antes = gr.getEdge(citybike['conecciones'],origen,destino)
+        peso_inicial = antes['weight']
+        promedio = (peso_inicial + duracion)/2
+        arco['weight'] = promedio
+    return citybike 
 
 # ==============================
 # Funciones de consulta
 # ==============================
+
+def totalStops(analyzer):
+    """
+    Retorna el total de estaciones (vertices) del grafo
+    """
+    return gr.numVertices(analyzer['conecciones'])
+
+
+def totalConnections(analyzer):
+    """
+    Retorna el total arcos del grafo
+    """
+    return gr.numEdges(analyzer['conecciones'])
+
+def numSCC(citybike):
+    sc = scc.KosarajuSCC(citybike)
+    return scc.connectedComponents(sc)
+
+def sameCC(sc, parada1, parada2):
+    return scc.stronglyConnected(sc, parada1, parada2)
 
 # ==============================
 # Funciones Helper
@@ -55,3 +138,27 @@ de creacion y consulta sobre las estructuras de datos.
 # ==============================
 # Funciones de Comparacion
 # ==============================
+
+def compareStopIds(stop, keyvaluestop):
+    """
+    Compara dos estaciones
+    """
+    stopcode = keyvaluestop['key']
+    if (stop == stopcode):
+        return 0
+    elif (stop > stopcode):
+        return 1
+    else:
+        return -1
+
+
+def compareroutes(route1, route2):
+    """
+    Compara dos rutas
+    """
+    if (route1 == route2):
+        return 0
+    elif (route1 > route2):
+        return 1
+    else:
+        return -1
