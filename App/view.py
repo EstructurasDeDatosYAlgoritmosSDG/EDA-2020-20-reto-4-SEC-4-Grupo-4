@@ -31,6 +31,7 @@ from App import controller
 from DISClib.ADT import stack
 import timeit
 assert config
+from time import process_time
 
 """
 La vista se encarga de la interacción con el usuario.
@@ -62,14 +63,15 @@ def printMenu():
     print("*******************************************")
     print("Bienvenido")
     print("1- Inicializar Analizador")
-    print("2- ")
-    print("3- ")
-    print("4- ")
-    print("5- ")
-    print("6- ")
-    print("7- ")
-    print("8- ")
-    print("9-")
+    print("2- Cargar viajes")
+    print("3- Conocer cantidad de Clusters de viajes")
+    print("4- Obtener una ruta turística circular")
+    print("5- Conocer estaciones críticas")
+    print("6- Obtener ruta turística por resistencia")
+    print("7- Recomendador de rutas")
+    print("8- Conocer ruta de interés turístico")
+    print("9- Identificar estaciones para publicidad")
+    print("10- Identificar bicicletas para mantenimiento")
     print("0- Salir")
     print("*******************************************")
 
@@ -82,25 +84,60 @@ while True:
     inputs = input('Seleccione una opción para continuar\n>')
 
     if int(inputs[0]) == 1:
-        pass
+        t1_start = process_time() #tiempo inicial
+        print('\nIniciando analizador...')
+        analizer = controller.init()
+        t1_stop = process_time() #tiempo final
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
-
     elif int(inputs[0]) == 2:
-        pass
-
+        t1_start = process_time() #tiempo inicial
+        print('\nCargando los datos...')
+        cont = controller.loadTrips(analizer)
+        numedges = controller.totalConnections(cont[0])
+        numvertex = controller.totalStops(cont[0])
+        print('\nNúmero de estaciones: ' + str(numvertex))
+        print('\nNúmero de conecciones: ' + str(numedges))
+        print('\nEl total de viajes cargados es de: ' + str(cont[1]))
+        t1_stop = process_time() #tiempo final
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs[0]) == 3:
-        pass
+        t1_start = process_time() #tiempo inicial
+        print('\nLa cantidad de componentes fuertemente conectados que se encontraron es de: '+ str(controller.cantidad_componentes_fconectados(analizer)))
+        t1_stop = process_time() #tiempo final
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs[0]) == 4:
-        pass
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
-
     elif int(inputs[0]) == 5:
-        pass
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs[0]) == 7:
-        pass
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs[0]) == 8:
-        pass
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+    
+    elif int(inputs[0]) == 9:
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+    
+    elif int(inputs[0]) == 10:
+        t1_start = process_time() #tiempo inicial
+        t1_stop = process_time() #tiempo final
+        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+
+    else:
+        sys.exit(0)
+sys.exit(0)
