@@ -49,7 +49,8 @@ def newAnalyzer():
     """
     try:
         analyzer = {
-                    'conecciones': None
+                    'conecciones': None,
+                    'edades': None
                     }
 
         analyzer['conecciones'] = gr.newGraph(datastructure='ADJ_LIST',
@@ -77,6 +78,7 @@ def addTrip(citybike, trip):
     try:
         origen = trip['start station id']
         destino = trip['end station id']
+        edad = int(trip['birth year']) - 2018
         duracion = int(trip['tripduration'])
         addStation(citybike, origen)
         addStation(citybike, destino)
@@ -128,8 +130,12 @@ def numSCC(citybike):
     sc = scc.KosarajuSCC(citybike)
     return scc.connectedComponents(sc)
 
-def sameCC(sc, parada1, parada2):
-    return scc.stronglyConnected(sc, parada1, parada2)
+def sameCC(citybike, parada1, parada2):
+    return scc.stronglyConnected(scc.KosarajuSCC(citybike), parada1, parada2)
+
+
+def recomendar_ruta(citybike):
+    pass
 
 # ==============================
 # Funciones Helper

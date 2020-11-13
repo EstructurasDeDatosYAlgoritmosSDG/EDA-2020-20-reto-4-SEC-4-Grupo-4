@@ -96,3 +96,7 @@ def totalConnections(analyzer):
 def cantidad_componentes_fconectados(graph):
     cantidad = model.numSCC(graph['conecciones'])
     return cantidad
+
+def pertenecen_al_mismo_cluster(graph, estacion1, estacion2):
+    si = model.sameCC(graph['conecciones'],estacion1,estacion2)
+    return si

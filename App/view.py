@@ -68,7 +68,7 @@ def printMenu():
     print("4- Obtener una ruta turística circular")
     print("5- Conocer estaciones críticas")
     print("6- Obtener ruta turística por resistencia")
-    print("7- Recomendador de rutas")
+    print("7- Recomendador de rutas por rango de edades")
     print("8- Conocer ruta de interés turístico")
     print("9- Identificar estaciones para publicidad")
     print("10- Identificar bicicletas para mantenimiento")
@@ -104,7 +104,14 @@ while True:
 
     elif int(inputs[0]) == 3:
         t1_start = process_time() #tiempo inicial
-        print('\nLa cantidad de componentes fuertemente conectados que se encontraron es de: '+ str(controller.cantidad_componentes_fconectados(analizer)))
+        estacion1 = (input('\nEscriba la identificación de la estación 1: '))
+        estacion2 = (input('\nEscriba la identificación de la estación 2: '))
+        print('\nEl total de Clusters encontrados es: ' + str(controller.cantidad_componentes_fconectados(analizer)))
+        pertenecen = controller.pertenecen_al_mismo_cluster(analizer,estacion1,estacion2)
+        if pertenecen:
+            print('\nLas dos estaciones pertenecen al mismo Cluster.')
+        else:
+            print('\nLas dos estaciones no pertenecen al mismo Cluster.')
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
