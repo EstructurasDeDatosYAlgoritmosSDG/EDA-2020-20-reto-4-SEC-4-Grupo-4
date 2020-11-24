@@ -28,6 +28,8 @@
 import sys
 import config
 from App import controller
+from DISClib.ADT import map as m
+from DISClib.DataStructures import listiterator as it
 from DISClib.ADT import stack
 import timeit
 assert config
@@ -120,10 +122,26 @@ while True:
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
-    elif int(inputs[0]) == 5:
+    elif int(inputs[0]) == 5: #conocer estaciones criticas
         t1_start = process_time() #tiempo inicial
+        cont = controller.conocerEstacionesCriticas(analizer)
+        print('\nLos nombres de las 3 estaciones Top de llegada son:')
+        iterador_llegada = it.newIterator(cont[0])
+        iterador_salida = it.newIterator(cont[1])
+        iterador_peores = it.newIterator(cont[2])
+        while it.hasNext(iterador_llegada):
+            estacion = it.next(iterador_llegada)
+            print(estacion)
+        print('\nLos nombres de las 3 estaciones Top de salida son:')
+        while it.hasNext(iterador_salida):
+            estacion = it.next(iterador_salida)
+            print(estacion)
+        print('\nLos nombres de las 3 estaciones menos utilizadas son:')
+        while it.hasNext(iterador_peores):
+            estacion = it.next(iterador_peores)
+            print(estacion)
         t1_stop = process_time() #tiempo final
-        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs[0]) == 7:
         t1_start = process_time() #tiempo inicial
