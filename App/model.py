@@ -26,6 +26,7 @@
 import config
 from DISClib.ADT.graph import gr
 from DISClib.ADT import map as m
+from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
 from DISClib.Algorithms.Graphs import scc
@@ -50,13 +51,16 @@ def newAnalyzer():
     try:
         analyzer = {
                     'conecciones': None,
-                    'edades': None
+                    'edades': None,
+                    'entradasysalidas': None
                     }
 
         analyzer['conecciones'] = gr.newGraph(datastructure='ADJ_LIST',
                                               directed=True,
                                               size=14000,
                                               comparefunction=compareStopIds)
+                                        
+        analyzer['entradasysalidas'] = m.newMap(numelements=768, comparefunction=compareStopIds)
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
@@ -83,6 +87,8 @@ def addTrip(citybike, trip):
         addStation(citybike, origen)
         addStation(citybike, destino)
         addConection(citybike, origen, destino, duracion)
+        addEntradaySalida(citybike, origen, 0)
+        addEntradaySalida(citybike, destino, 1)
         return citybike
     except Exception as exp:
         error.reraise(exp, 'model:addStopConnection')
@@ -107,8 +113,28 @@ def addConection(citybike, origen, destino, duracion):
         peso_inicial = antes['weight']
         promedio = (peso_inicial + duracion)/2
         arco['weight'] = promedio
-    return citybike 
+    return citybike
 
+def addEntradaySalida(citybike, stationId, identificador):
+    """
+    Adiciona una entrada y salida a la tabla de hash
+    """
+    if not m.contains(citybike['entradasysalidas'], stationId):
+        mapa_interior = m.newMap(numelements=2, comparefunction=compareEntradasySalidas)
+        m.put(citybike['entradasysalidas'], stationId, mapa_interior)
+    mapa_interior = m.get(citybike['entradasysalidas'], stationId)
+    mapa_interior = mapa_interior['value']
+    if identificador == 0:
+        if not m.contains(mapa_interior, identificador):
+            m.put(mapa_interior, identificador, 0)
+        suma1 = m.get(mapa_interior, identificador)
+        suma1['value'] += 1
+    else:
+        if not m.contains(mapa_interior, identificador):
+            m.put(mapa_interior, identificador, 0)
+        suma2 = m.get(mapa_interior, identificador)
+        suma2['value'] += 1
+    return citybike
 # ==============================
 # Funciones de consulta
 # ==============================
@@ -136,6 +162,125 @@ def sameCC(citybike, parada1, parada2):
 
 def recomendar_ruta(citybike):
     pass
+
+def EstacionesCriticas(citybike):
+    mapa_estaciones = citybike['entradasysalidas']
+    llaves = m.keySet(mapa_estaciones)
+    iterador = it.newIterator(llaves)
+    entradas = 0
+    salidas = 0
+    mayor_entradas1 = -10
+    mayor_entradas2 = -10
+    mayor_entradas3 = -10
+    mejor_entradas1 = ''
+    mejor_entradas2 = ''
+    mejor_entradas3 = ''
+    mejor_salidas1 = ''
+    mejor_salidas2 = ''
+    mejor_salidas3 = ''
+    peor_suma1 = ''
+    peor_suma2 = ''
+    peor_suma3 = ''
+    mayor_salidas1 = -10
+    mayor_salidas2 = -10
+    mayor_salidas3 = -10
+    menor_suma1 = 100000
+    menor_suma2 = 100000
+    menor_suma3 = 100000
+    lista_entradas = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compararvertices)
+    lista_salidas = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compararvertices)
+    lista_peores = lt.newList(datastructure='ARRAY_LIST', cmpfunction=compararvertices)
+    while it.hasNext(iterador):
+        estacion = it.next(iterador)
+        mapa_interior = m.get(mapa_estaciones, estacion)
+        mapa_salidas = mapa_interior['value']
+        if m.contains(mapa_salidas, 0):
+            entradas = m.get(mapa_salidas, 0)
+            entradas = entradas['value']
+            if entradas > mayor_entradas1:
+                auxiliar_nombre = mejor_entradas1
+                auxiliar_valor = mayor_entradas1
+                mayor_entradas1 = entradas
+                mejor_entradas1 = estacion
+                auxiliar_nombre1 = mejor_entradas2
+                auxiliar_valor1 = mayor_entradas2
+                mejor_entradas2 = auxiliar_nombre
+                mayor_entradas2 = auxiliar_valor
+                mejor_entradas3 = auxiliar_nombre1
+                mayor_entradas3 = auxiliar_valor1
+            elif mayor_entradas2 < entradas:
+                auxiliar_valor = mayor_entradas2
+                mayor_entradas2 = entradas
+                auxiliar_nombre = mejor_entradas2
+                mejor_entradas2 = estacion
+                mejor_entradas3 = auxiliar_nombre
+                mayor_entradas3 = auxiliar_valor
+            elif mayor_entradas3 < entradas:
+                mayor_entradas3 = entradas
+                mejor_entradas3 = estacion
+                
+        if m.contains(mapa_salidas, 1):
+            salidas = m.get(mapa_salidas, 1)
+            salidas = salidas['value']
+            if salidas > mayor_salidas1:
+                auxiliar_nombre = mejor_salidas1
+                auxiliar_valor = mayor_salidas1
+                mayor_salidas1 = salidas
+                mejor_salidas1 = estacion
+                auxiliar_nombre1 = mejor_salidas2
+                auxiliar_valor1 = mayor_salidas2
+                mejor_salidas2 = auxiliar_nombre
+                mayor_salidas2 = auxiliar_valor
+                mejor_salidas3 = auxiliar_nombre1
+                mayor_salidas3 = auxiliar_valor1
+            elif mayor_salidas2 < salidas:
+                auxiliar_valor = mayor_salidas2
+                mayor_salidas2 = salidas
+                auxiliar_nombre = mejor_salidas2
+                mejor_salidas2 = estacion
+                mejor_salidas3 = auxiliar_nombre
+                mayor_salidas3 = auxiliar_valor
+            elif mayor_salidas3 < salidas:
+                mayor_salidas3 = salidas
+                mejor_salidas3 = estacion
+        suma = int(entradas) + int(salidas)
+        if suma < menor_suma1:
+            auxiliar_nombre = peor_suma1
+            auxiliar_valor = menor_suma1
+            menor_suma1 = suma
+            peor_suma1 = estacion
+            auxiliar_nombre1 = peor_suma2
+            auxiliar_valor1 = menor_suma2
+            peor_suma2 = auxiliar_nombre
+            menor_suma2 = auxiliar_valor
+            peor_suma3 = auxiliar_nombre1
+            menor_suma3 = auxiliar_valor1
+        elif menor_suma2 > suma:
+            auxiliar_valor = menor_suma2
+            menor_suma2 = suma
+            auxiliar_nombre = peor_suma2
+            peor_suma2 = estacion
+            peor_suma3 = auxiliar_nombre
+            menor_suma3 = auxiliar_valor
+        elif menor_suma3 > suma:
+            menor_suma3 = suma
+            peor_suma3 = estacion
+
+    lt.addLast(lista_entradas, mejor_entradas1)
+    lt.addLast(lista_entradas, mejor_entradas2)
+    lt.addLast(lista_entradas, mejor_entradas3)
+
+    lt.addLast(lista_salidas, mejor_salidas1)
+    lt.addLast(lista_salidas, mejor_salidas2)
+    lt.addLast(lista_salidas, mejor_salidas3)
+
+    lt.addLast(lista_peores, peor_suma1)
+    lt.addLast(lista_peores, peor_suma2)
+    lt.addLast(lista_peores, peor_suma3)
+
+
+    return (lista_entradas, lista_salidas, lista_peores)
+
 
 # ==============================
 # Funciones Helper
@@ -165,6 +310,29 @@ def compareroutes(route1, route2):
     if (route1 == route2):
         return 0
     elif (route1 > route2):
+        return 1
+    else:
+        return -1
+
+def compararvertices(vertice1, vertice2):
+    """
+    Compara dos vertices
+    """
+    if (vertice1 == vertice2):
+        return 0
+    elif (vertice1 > vertice2):
+        return 1
+    else:
+        return -1
+
+def compareEntradasySalidas(keyname, productora):
+    """
+    Compara dos entradas o salidas
+    """
+    authentry = me.getKey(productora)
+    if (keyname == authentry):
+        return 0
+    elif (keyname > authentry):
         return 1
     else:
         return -1
