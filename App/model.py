@@ -381,7 +381,11 @@ def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_d
         dijsktra_origen = m.get(citybike['grafo_tiempos'],str(menor_vertice_origen))
         dijsktra_origen = dijsktra_origen['value']
         camino = djk.pathTo(dijsktra_origen, str(menor_vertice_destino))
-    return camino
+    if not lt.isEmpty(camino):
+        return camino
+    else:
+        return menor_vertice_origen
+
 
 
 

@@ -126,7 +126,7 @@ def ruta_turistica_resistencia(citybike, tiempo, id):
 
 def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_destino, latitud_destino):
     camino = model.ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_destino, latitud_destino)
-    if camino != None:
+    if not isinstance(camino, str):
         tiempo = 0
         iterador = it.newIterator(camino)
         while it.hasNext(iterador):
@@ -134,7 +134,7 @@ def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_d
             peso = cam['weight']
             tiempo += peso
         return camino, tiempo
-    return None
+    return camino
   
 def conocerEstacionesCriticas(citybike):
     lista = model.EstacionesCriticas(citybike)

@@ -199,7 +199,7 @@ while True:
         longitud_destino = float(input('\nIndique la longitud del sitio turístico al que quiere viajar: '))
         latitud_destino = float(input('\nIndique la latitud del sitio turístico al que quiere viajar: '))
         datos = controller.ruta_interes_turistico(analizer,longitud_origen, latitud_origen, longitud_destino, latitud_destino)
-        if datos != None:
+        if not isinstance(datos, str):
             print('\nLa estación más cercana a su ubicación actual es: ' + str(lt.firstElement(datos[0])['vertexA']))
             print('\nLa estación más cercana al sitio turístico que quiere visitar es: ' + str(lt.lastElement(datos[0])['vertexB']))
             print('\nEl tiempo estimado de viaje es de: ' + str(datos[1]))
@@ -209,6 +209,9 @@ while True:
             while it.hasNext(iterador):
                 siguiente = it.next(iterador)
                 print(siguiente['vertexB'])
+        else:
+            print('\nLa estación recomendada de inicio y la estación recomendada final son la misma: '+datos+'. Estás muy cerca podrías ir caminando :)')
+
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
     
