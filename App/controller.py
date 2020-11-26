@@ -28,6 +28,9 @@ import config as cf
 from App import model
 import csv
 import os
+from DISClib.ADT import stack
+from DISClib.ADT import list as lt
+from DISClib.DataStructures import listiterator as it
 
 """
 El controlador se encarga de mediar entre la vista y el modelo.
@@ -73,6 +76,9 @@ def loadFile(citybike, tripfile, principio):
         numero += 1
     return citybike, numero
 
+def addStationGraph(citybike):
+    return model.addStationGraph(citybike)
+
     
     
 
@@ -100,3 +106,32 @@ def cantidad_componentes_fconectados(graph):
 def pertenecen_al_mismo_cluster(graph, estacion1, estacion2):
     si = model.sameCC(graph['conecciones'],estacion1,estacion2)
     return si
+
+def recomendar_ruta(citybike, rango):
+    ruta = model.recomendar_ruta(citybike, rango)
+    if ruta != '':
+        estaciones_en_ruta = lt.newList()
+        i = 1
+        while i <= stack.size(ruta):
+            camino = stack.pop(ruta)
+            vertexA = camino['vertexA']
+            vertexB = camino['vertexB']
+            lt.addLast(estaciones_en_ruta,vertexA)
+            lt.addLast(estaciones_en_ruta,vertexB)
+            i += 1
+        return estaciones_en_ruta
+
+def ruta_turistica_resistencia(citybike, tiempo, id):
+    return model.ruta_turistica_resistencia(citybike,tiempo,id)
+
+def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_destino, latitud_destino):
+    camino = model.ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_destino, latitud_destino)
+    if camino != None:
+        tiempo = 0
+        iterador = it.newIterator(camino)
+        while it.hasNext(iterador):
+            cam = it.next(iterador)
+            peso = cam['weight']
+            tiempo += peso
+        return camino, tiempo
+    return None
