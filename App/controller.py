@@ -135,3 +135,7 @@ def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_d
             tiempo += peso
         return camino, tiempo
     return None
+  
+def conocerEstacionesCriticas(citybike):
+    lista = model.EstacionesCriticas(citybike)
+    return lista
