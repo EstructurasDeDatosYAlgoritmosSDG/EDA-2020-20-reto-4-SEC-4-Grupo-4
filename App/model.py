@@ -63,7 +63,8 @@ def newAnalyzer():
                     'grafo_tiempos': None,
                     'latitud_longitud': None,
                     'bicicletas': None,
-                    'entradasysalidas': None
+                    'entradasysalidas': None,
+                    'par_estaciones': None
                     }
 
         analyzer['conecciones'] = gr.newGraph(datastructure='ADJ_LIST',
@@ -80,6 +81,9 @@ def newAnalyzer():
         analyzer['bicicletas'] = m.newMap(numelements=500, comparefunction=compararIdentificador)
                                         
         analyzer['entradasysalidas'] = m.newMap(numelements=768, comparefunction=compareStopIds)
+
+        analyzer['par_estaciones'] = m.newMap(numelements=100000, comparefunction=compararEdades)
+
         
         return analyzer
     except Exception as exp:
@@ -115,6 +119,8 @@ def addTrip(citybike, trip):
 
         #Requerimiento 7
         user_type = trip['usertype']
+        if user_type == 'Customer':
+            addParEstaciones(citybike, origen, destino, edad)
 
         #Requerimiento 8
 
@@ -134,6 +140,33 @@ def addTrip(citybike, trip):
         return citybike
     except Exception as exp:
         error.reraise(exp, 'model:addStopConnection')
+
+def addParEstaciones(citybike, origen, destino, edad):
+    par = (origen, destino)
+    if not m.contains(citybike['par_estaciones'], par):
+        m.put(citybike['par_estaciones'], par, m.newMap(numelements=7, comparefunction=compararRangos))
+    rangos = m.get(citybike['par_estaciones'], par)
+    rangos = rangos['value']
+    if edad <= 10:
+        rango = '0-10'
+    elif edad <= 20:
+        rango = '11-20'
+    elif edad <= 30:
+        rango = '21-30'
+    elif edad <= 40:
+        rango = '31-40'
+    elif edad <= 50:
+        rango = '41-50'
+    elif edad <= 60:
+        rango = '51-60'
+    else:
+        rango = '60+'
+    if not m.contains(rangos, rango):
+        m.put(rangos, rango, 0)
+    datos = m.get(rangos, rango)
+    datos['value'] += 1
+    m.put(citybike['par_estaciones'], par, rangos)
+    return citybike
 
 def addBike(citybike, bikeid, fecha, origen, destino, duracion):
     if not m.contains(citybike['bicicletas'], bikeid):
@@ -349,45 +382,27 @@ def identificar_estaciones_publicidad(citybike, rango):
         rango = '51-60'
     else:
         rango = '60+'
-    
-    mapa_edades = citybike['edades']
-    estaciones = m.keySet(mapa_edades)
-    mayor_inicio = 0 
-    id_mayor_inicio = lt.newList()
-    mayor_final = 0 
-    id_mayor_final = lt.newList()
-    iterador = it.newIterator(estaciones)
+
+    estaciones_mayor = 0
+    estaciones = lt.newList()
+
+    par_estaciones = m.keySet(citybike['par_estaciones'])
+    iterador = it.newIterator(par_estaciones)
     while it.hasNext(iterador):
-        id_estacion = it.next(iterador)
-        datos = m.get(mapa_edades, id_estacion)
-        datos = datos['value']
-        if m.contains(datos, 0):
-            mapa_origen = m.get(datos, 0)
-            mapa_origen = mapa_origen['value']
-            if m.contains(mapa_origen, rango):
-                origen = m.get(mapa_origen, rango)
-                origen = origen['value'][1]
-                if int(origen) == mayor_inicio:
-                    lt.addLast(id_mayor_inicio, id_estacion)
-                elif int(origen) > mayor_inicio:
-                    mayor_inicio = int(origen)
-                    id_mayor_inicio = lt.newList()
-                    lt.addLast(id_mayor_inicio, id_estacion)
-
-        if m.contains(datos, 1):
-            mapa_destino = m.get(datos ,1)
-            mapa_destino = mapa_destino['value']
-            if m.contains(mapa_destino, rango):
-                destino = m.get(mapa_destino, rango)
-                destino = destino['value'][1]
-                if int(destino) == mayor_final:
-                    lt.addLast(id_mayor_final, id_estacion)
-                elif int(destino) > mayor_final:
-                    mayor_final = int(destino)
-                    id_mayor_final = lt.newList()
-                    lt.addLast(id_mayor_final, id_estacion)
-
-    return id_mayor_inicio, id_mayor_final, mayor_inicio, mayor_final
+        par_estacion = it.next(iterador)
+        mapa_rangos = m.get(citybike['par_estaciones'], par_estacion)
+        mapa_rangos = mapa_rangos['value']
+        if m.contains(mapa_rangos, rango):
+            cant_rango = m.get(mapa_rangos, rango)
+            cant_rango = cant_rango['value']
+            if cant_rango == estaciones_mayor:
+                lt.addLast(estaciones, par_estacion)
+            elif cant_rango > estaciones_mayor:
+                estaciones_mayor = cant_rango
+                estaciones = lt.newList()
+                lt.addLast(estaciones, par_estacion)
+                
+    return estaciones, estaciones_mayor
 
 def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     """
@@ -442,9 +457,6 @@ def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_d
 
 
 
-
-
-
 def calcular_ruta(citybike, tiempo, id, lista_rutas, vertices_utilizados, tiempo_recorrido):
     """ 
     Esta funcion calcula la ruta que recorre mas estacionoes en el menor tiempo posible
@@ -475,9 +487,10 @@ def calcular_ruta(citybike, tiempo, id, lista_rutas, vertices_utilizados, tiempo
         minpq.delMin(cola_id)
 
     if vertice_utilizar == '':
-        if not m.contains(vertices_utilizados, primer_valor['vertexB']) and primer_valor['weight']+ tiempo_recorrido <= tiempo:
-            m.put(vertices_utilizados,primer_valor['vertexB'],0)
-            lt.addLast(lista_rutas, primer_valor)
+        if primer_valor != None:
+            if not m.contains(vertices_utilizados, primer_valor['vertexB']) and primer_valor['weight']+ tiempo_recorrido <= tiempo:
+                m.put(vertices_utilizados,primer_valor['vertexB'],0)
+                lt.addLast(lista_rutas, primer_valor)
         return lista_rutas
     arco = gr.getEdge(citybike['conecciones'], id, vertice_utilizar)
     peso = arco['weight']
@@ -499,7 +512,7 @@ def ruta_turistica_resistencia(citybike, tiempo, id):
         while not termine:
             lista_rutas = lt.newList(datastructure='ARRAY_LIST')
             calcular_ruta(citybike, tiempo, id, lista_rutas, vertices_utilizados, 0)
-            if lt.size(lista_rutas) == 1:
+            if lt.size(lista_rutas) == 1 or lt.size(lista_rutas) == 0:
                 termine = True
             elif lt.size(lista_rutas) > lt.size(lista_total):
                 lista_total = lista_rutas

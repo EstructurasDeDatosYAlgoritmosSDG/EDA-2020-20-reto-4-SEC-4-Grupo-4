@@ -157,7 +157,7 @@ while True:
             iterador = it.newIterator(ruta)
             while it.hasNext(iterador):
                 camino = it.next(iterador)
-                print(camino['vertexA']+' hacia '+ camino['vertexB'] + '. Tiempo estimado: '+ str(camino['weight']))
+                print(camino['vertexA']+' hacia '+ camino['vertexB'] + '. Tiempo estimado: '+ str(round(camino['weight']/60, 2))+' minutos')
         else:
             print('La identificación de la estación escrita no existe')
         t1_stop = process_time() #tiempo final
@@ -228,27 +228,16 @@ while True:
         rango = int(input('\nIngrese el número: '))
         datos = controller.identificar_estaciones_publicidad(analizer, rango)
         if datos != None:
-            lista_mayor_inicio = datos[0]
-            lista_mayor_final = datos[1]
-            cant_mayor_inicio = datos[2]
-            cant_mayor_final = datos[3]
+            lista_par_estaciones = datos[0]
+            cant_viajes = datos[1]
 
-            iterador_inicio = it.newIterator(lista_mayor_inicio)
-            print('\nLa o las estaciones que mas personas de este grupo de edad usan como origen son:')
+            iterador_inicio = it.newIterator(lista_par_estaciones)
+            print('\nLa/las estaciones adyacentes que más utilizan las personas de este grupo de edad:')
             print('')
             while it.hasNext(iterador_inicio):
                 siguiente = it.next(iterador_inicio)
-                print(siguiente)
-            print('\nCon un total de '+str(cant_mayor_inicio), 'personas')
-
-            iterador_final = it.newIterator(lista_mayor_final)
-            print('\nLa o las estaciones que mas personas de este grupo de edad usan como destino son:')
-            print('')
-            while it.hasNext(iterador_final):
-                siguiente = it.next(iterador_final)
-                print(siguiente)
-            print('\nCon un total de '+str(cant_mayor_final), 'personas')
-
+                print('De la estación '+ str(siguiente[0])+' hasta la estación '+str(siguiente[1]))
+            print('\nCon un total de '+str(cant_viajes), 'viajes')
 
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
