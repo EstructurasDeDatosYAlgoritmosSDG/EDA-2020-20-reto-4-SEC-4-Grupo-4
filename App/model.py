@@ -104,23 +104,30 @@ def addTrip(citybike, trip):
         destino = trip['end station id']
         edad =  2018 - int(trip['birth year'])
         duracion = int(trip['tripduration'])
+
+        #Requerimiento 6
         longitud_origen = float(trip['start station longitude'])
         latitud_origen = float(trip['start station latitude'])
         longitud_destino = float(trip['end station longitude'])
         latitud_destino = float(trip['end station latitude'])
+        addStationLongitudLatitud(citybike, origen, longitud_origen, latitud_origen)
+        addStationLongitudLatitud(citybike, destino, longitud_destino, latitud_destino)
+
+        #Requerimiento 7
+        user_type = trip['usertype']
+
+        #Requerimiento 8
+
         bikeid = int(trip['bikeid'])
-        
         fecha = trip['starttime'][:10]
-        hora_inicio = trip['starttime'][10:19]
-        hora_final = trip['stoptime'][10:19]
+        addBike(citybike, bikeid, fecha, origen, destino, duracion)
 
 
         addStation(citybike, origen)
         addStation(citybike, destino)
-        addStationHash(citybike,origen,edad, 0)
-        addStationHash(citybike,destino,edad, 1)
-        addStationLongitudLatitud(citybike, origen, longitud_origen, latitud_origen)
-        addStationLongitudLatitud(citybike, destino, longitud_destino, latitud_destino)
+        addStationHash(citybike,origen,edad, 0, user_type)
+        addStationHash(citybike,destino,edad, 1, user_type)
+        
         addConection(citybike, origen, destino, duracion)
         addEntradaySalida(citybike, origen, 0)
         addEntradaySalida(citybike, destino, 1)
@@ -128,17 +135,24 @@ def addTrip(citybike, trip):
     except Exception as exp:
         error.reraise(exp, 'model:addStopConnection')
 
-def addBike(citybike, bikeid, fecha, hora_inicio, hora_final):
+def addBike(citybike, bikeid, fecha, origen, destino, duracion):
     if not m.contains(citybike['bicicletas'], bikeid):
-        m.put(citybike['bicicletas'], bikeid, m.newMap(numelements=365, comparefunction=compararIdentificador))
-    mapa_fechas = m.get(citybike['conecciones'], bikeid)
+        m.put(citybike['bicicletas'], bikeid, m.newMap(numelements=365, comparefunction=compararBikeid))
+    mapa_fechas = m.get(citybike['bicicletas'], bikeid)
     mapa_fechas = mapa_fechas['value']
     if not m.contains(mapa_fechas, fecha):
-        m.put(mapa_fechas, fecha, minpq.newMinPQ(compararHoras))
-    cola_horas = m.get(mapa_fechas, fecha)
-    cola_horas = cola_horas['value']
-    minpq.insert(cola_horas, (hora_inicio,hora_final))
-    m.put(mapa_fechas, fecha, cola_horas)
+        m.put(mapa_fechas, fecha, (0, lt.newList()))
+
+    datos = m.get(mapa_fechas, fecha)
+    datos = datos['value']
+    tiempo_recorrido = datos[0]
+    tiempo_recorrido += duracion
+
+    lista_estaciones = datos[1]
+    lt.addLast(lista_estaciones, origen)
+    lt.addLast(lista_estaciones, destino)
+
+    m.put(mapa_fechas, fecha, (tiempo_recorrido, lista_estaciones))
     m.put(citybike['bicicletas'], bikeid, mapa_fechas)
     return citybike
 
@@ -149,7 +163,7 @@ def addStationLongitudLatitud(citybike, id, longitud, latitud):
     return citybike
 
 
-def addStationHash(citybike, id, edad, identificador):
+def addStationHash(citybike, id, edad, identificador, user_type):
     try:
         id = int(id)
         if not m.contains(citybike['edades'], id):
@@ -161,40 +175,25 @@ def addStationHash(citybike, id, edad, identificador):
         rangos = m.get(tabla,identificador)
         rangos = rangos['value']
         if edad <= 10:
-            if not m.contains(rangos, '0-10'):
-                m.put(rangos, '0-10', 0)
-            suma = m.get(rangos, '0-10')
-            suma['value'] += 1
+            rango = '0-10'
         elif edad <= 20:
-            if not m.contains(rangos, '11-20'):
-                m.put(rangos, '11-20', 0)
-            suma = m.get(rangos, '11-20')
-            suma['value'] += 1
+            rango = '11-20'
         elif edad <= 30:
-            if not m.contains(rangos, '21-30'):
-                m.put(rangos, '21-30', 0)
-            suma = m.get(rangos, '21-30')
-            suma['value'] += 1
+            rango = '21-30'
         elif edad <= 40:
-            if not m.contains(rangos, '31-40'):
-                m.put(rangos, '31-40', 0)
-            suma = m.get(rangos, '31-40')
-            suma['value'] += 1
+            rango = '31-40'
         elif edad <= 50:
-            if not m.contains(rangos, '41-50'):
-                m.put(rangos, '41-50', 0)
-            suma = m.get(rangos, '41-50')
-            suma['value'] += 1
+            rango = '41-50'
         elif edad <= 60:
-            if not m.contains(rangos, '51-60'):
-                m.put(rangos, '51-60', 0)
-            suma = m.get(rangos, '51-60')
-            suma['value'] += 1
+            rango = '51-60'
         else:
-            if not m.contains(rangos, '60+'):
-                m.put(rangos, '60+', 0)
-            suma = m.get(rangos, '60+')
-            suma['value'] += 1
+            rango = '60+'
+        if not m.contains(rangos, rango):
+            m.put(rangos, rango, [0,0])
+        datos = m.get(rangos, rango)
+        datos['value'][0] += 1
+        if user_type == 'Customer':
+            datos['value'][1] += 1
         m.put(tabla,identificador,rangos)
         m.put(citybike['edades'],id,tabla)
         return citybike
@@ -315,7 +314,7 @@ def recomendar_ruta(citybike, rango):
             mapa_origen = mapa_origen['value']
             if m.contains(mapa_origen, rango):
                 origen = m.get(mapa_origen, rango)
-                origen = origen['value']
+                origen = origen['value'][0]
                 if int(origen) > mayor_inicio:
                     mayor_inicio = int(origen)
                     id_mayor_inicio = id_estacion
@@ -324,7 +323,7 @@ def recomendar_ruta(citybike, rango):
             mapa_destino = mapa_destino['value']
             if m.contains(mapa_destino, rango):
                 destino = m.get(mapa_destino, rango)
-                destino = destino['value']
+                destino = destino['value'][0]
                 if int(destino) > mayor_final:
                     mayor_final = destino
                     id_mayor_final = id_estacion
@@ -334,6 +333,61 @@ def recomendar_ruta(citybike, rango):
         dijsktra_origen = dijsktra_origen['value']
         camino = djk.pathTo(dijsktra_origen, str(id_mayor_final))
     return camino
+
+def identificar_estaciones_publicidad(citybike, rango):
+    if rango == 1:
+        rango = '0-10'
+    elif rango == 2:
+        rango = '11-20'
+    elif rango == 3:
+        rango = '21-30'
+    elif rango == 4:
+        rango = '31-40'
+    elif rango == 5:
+        rango = '41-50'
+    elif rango == 6:
+        rango = '51-60'
+    else:
+        rango = '60+'
+    
+    mapa_edades = citybike['edades']
+    estaciones = m.keySet(mapa_edades)
+    mayor_inicio = 0 
+    id_mayor_inicio = lt.newList()
+    mayor_final = 0 
+    id_mayor_final = lt.newList()
+    iterador = it.newIterator(estaciones)
+    while it.hasNext(iterador):
+        id_estacion = it.next(iterador)
+        datos = m.get(mapa_edades, id_estacion)
+        datos = datos['value']
+        if m.contains(datos, 0):
+            mapa_origen = m.get(datos, 0)
+            mapa_origen = mapa_origen['value']
+            if m.contains(mapa_origen, rango):
+                origen = m.get(mapa_origen, rango)
+                origen = origen['value'][1]
+                if int(origen) == mayor_inicio:
+                    lt.addLast(id_mayor_inicio, id_estacion)
+                elif int(origen) > mayor_inicio:
+                    mayor_inicio = int(origen)
+                    id_mayor_inicio = lt.newList()
+                    lt.addLast(id_mayor_inicio, id_estacion)
+
+        if m.contains(datos, 1):
+            mapa_destino = m.get(datos ,1)
+            mapa_destino = mapa_destino['value']
+            if m.contains(mapa_destino, rango):
+                destino = m.get(mapa_destino, rango)
+                destino = destino['value'][1]
+                if int(destino) == mayor_final:
+                    lt.addLast(id_mayor_final, id_estacion)
+                elif int(destino) > mayor_final:
+                    mayor_final = int(destino)
+                    id_mayor_final = lt.newList()
+                    lt.addLast(id_mayor_final, id_estacion)
+
+    return id_mayor_inicio, id_mayor_final, mayor_inicio, mayor_final
 
 def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     """
@@ -571,6 +625,19 @@ def EstacionesCriticas(citybike):
 
     return (lista_entradas, lista_salidas, lista_peores)
 
+def identificar_bicicleta(citybike, bikeid, fecha):
+    if m.contains(citybike['bicicletas'], bikeid):
+        mapa = m.get(citybike['bicicletas'], bikeid)
+        mapa = mapa['value']
+        if m.contains(mapa, fecha):
+            llaves_horas = m.get(mapa, fecha)
+            llaves_horas = llaves_horas['value']
+            tiempo_uso = llaves_horas[0]
+            tiempo_parqueada = 86400 - tiempo_uso
+            lista_estaciones = llaves_horas[1]
+
+            return tiempo_uso, tiempo_parqueada, lista_estaciones
+
 
 # ==============================
 # Funciones Helper
@@ -686,9 +753,22 @@ def compararArcos(v1, v2):
 def compararHoras(v1, v2):
     v1 = v1[0]
     v2 = v2[0]
-    if int(v1) == int(v2):
+    if v1 == v2:
         return 0
     elif int(v1) > int(v2):
         return 1
     return -1
+
+def compararBikeid(keyname, productora):
+    """
+    Compara dos productoras. El primero es una cadena
+    y el segundo un entry de un map
+    """
+    authentry = me.getKey(productora)
+    if (keyname == authentry):
+        return 0
+    elif (keyname > authentry):
+      return 1
+    else:
+        return -1
 
