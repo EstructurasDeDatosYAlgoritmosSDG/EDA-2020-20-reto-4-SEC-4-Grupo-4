@@ -123,24 +123,25 @@ while True:
 
     elif int(inputs) == 4:
         t1_start = process_time() #tiempo inicial
+        print("Pedimos disculpas, Julián no hizo su requerimiento.")
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
     elif int(inputs) == 5: #conocer estaciones criticas
         t1_start = process_time() #tiempo inicial
         cont = controller.conocerEstacionesCriticas(analizer)
-        print('\nLos nombres de las 3 estaciones Top de llegada son:')
+        print('\nLas identificaciones de las 3 estaciones Top de llegada son:')
         iterador_llegada = it.newIterator(cont[0])
         iterador_salida = it.newIterator(cont[1])
         iterador_peores = it.newIterator(cont[2])
         while it.hasNext(iterador_llegada):
             estacion = it.next(iterador_llegada)
             print(estacion)
-        print('\nLos nombres de las 3 estaciones Top de salida son:')
+        print('\nLas identificaciones de las 3 estaciones Top de salida son:')
         while it.hasNext(iterador_salida):
             estacion = it.next(iterador_salida)
             print(estacion)
-        print('\nLos nombres de las 3 estaciones menos utilizadas son:')
+        print('\nLas identificaciones de las 3 estaciones menos utilizadas son:')
         while it.hasNext(iterador_peores):
             estacion = it.next(iterador_peores)
             print(estacion)
@@ -149,23 +150,23 @@ while True:
 
     elif int(inputs) == 6:
         t1_start = process_time() #tiempo inicial
-        tiempo = int(input('\nTiempo máximo en minutos de resitencia: '))
-        id = input('\nCual es la identificación de la estacion de inicio: ')
+        tiempo = int(input('\nTiempo máximo (en minutos) de resitencia: '))
+        id = input('\n¿Cuál es la identificación de la estación de inicio? ')
         print('')
         ruta = controller.ruta_turistica_resistencia(analizer,tiempo, id)
         if ruta != None:
             iterador = it.newIterator(ruta)
             while it.hasNext(iterador):
                 camino = it.next(iterador)
-                print(camino['vertexA']+' hacia '+ camino['vertexB'] + '. Tiempo estimado: '+ str(round(camino['weight']/60, 2))+' minutos')
+                print(camino['vertexA']+' hacia '+ camino['vertexB'] + '. Tiempo estimado: '+ str(round(camino['weight']/60, 2))+' minutos\n.')
         else:
-            print('La identificación de la estación escrita no existe')
+            print('La identificación de la estación escrita no existe.')
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     elif int(inputs) == 7:
         t1_start = process_time() #tiempo inicial
-        print('En que rango de edad se encuentra el turista:')
+        print('¿En qué rango de edad se encuentra el turista?')
         print('1) 0-10 años')
         print('2) 11-20 años')
         print('3) 21-30 años')
@@ -181,7 +182,7 @@ while True:
             print('\nLa estación de inicio recomendada es: '+estacion_inicio)
             print('\nLa estación de finalización recomendada es: ' + estacion_final)
             if lt.size(ruta) != 2:
-                print('\nLas estaciónes que estan entre la ruta recomendada son: ')
+                print('\nLas estaciones que están entre la ruta recomendada son: ')
                 i = 1
                 while i <= lt.size(ruta):
                     estacion = lt.getElement(ruta, i)
@@ -232,12 +233,12 @@ while True:
             cant_viajes = datos[1]
 
             iterador_inicio = it.newIterator(lista_par_estaciones)
-            print('\nLa/las estaciones adyacentes que más utilizan las personas de este grupo de edad:')
+            print('\nLa/las estaciones adyacentes que más utilizan las personas en este rango de edad son:')
             print('')
             while it.hasNext(iterador_inicio):
                 siguiente = it.next(iterador_inicio)
-                print('De la estación '+ str(siguiente[0])+' hasta la estación '+str(siguiente[1]))
-            print('\nCon un total de '+str(cant_viajes), 'viajes')
+                print('De la estación '+ str(siguiente[0])+' hasta la estación '+str(siguiente[1]+'.'))
+            print('\nCon un total de '+str(cant_viajes), 'viajes registrados en el sistema.')
 
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
@@ -245,19 +246,19 @@ while True:
     elif int(inputs) == 10:
         t1_start = process_time() #tiempo inicial
         bikeid = int(input('\nEscriba el identificador de la bicicleta: '))
-        fecha = input('\nEscriba la fecha la cual quiere revisar (AAAA-MM-DD): ')
+        fecha = input('\nEscriba la fecha que quiere revisar (AAAA-MM-DD): ')
         datos = controller.identificar_bicicleta(analizer, bikeid, fecha)
         if datos != None:
-            print('\nEl tiempo total de uso de la bicicleta en el dia es: '+str(datos[0]))
-            print('\nEl tiempo total en el que estuvo estacionada la bicicleta la bicicleta es: ', str(datos[1]))
-            print('\nLas estaciones en las que estuvo la bicicleta son:')
+            print('\nEl tiempo total de uso de la bicicleta en el día fue de: '+str(datos[0]))
+            print('\nEl tiempo total en el que estuvo estacionada la bicicleta fue de:', str(datos[1]))
+            print('\nLas estaciones en las que estuvo la bicicleta fueron:')
             print('')
             iterador = it.newIterator(datos[2])
             while it.hasNext(iterador):
                 siguiente = it.next(iterador)
                 print(siguiente)
         else:
-            print('\nEl identificador de la bicleta o la fecha ingresada no existen.')
+            print('\nEl identificador de la bicicleta o la fecha ingresada no existen.')
         
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
