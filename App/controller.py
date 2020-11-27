@@ -139,3 +139,9 @@ def ruta_interes_turistico(citybike, longitud_origen, latitud_origen, longitud_d
 def conocerEstacionesCriticas(citybike):
     lista = model.EstacionesCriticas(citybike)
     return lista
+
+def identificar_bicicleta(citybike, bikeid, fecha):
+    return model.identificar_bicicleta(citybike, bikeid, fecha)
+
+def identificar_estaciones_publicidad(citybike, rango):
+    return model.identificar_estaciones_publicidad(citybike, rango)

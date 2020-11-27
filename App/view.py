@@ -86,16 +86,16 @@ Menu principal
 """
 while True:
     printMenu()
-    inputs = input('Seleccione una opción para continuar\n>')
+    inputs = int(input('Seleccione una opción para continuar\n>'))
 
-    if int(inputs[0]) == 1:
+    if int(inputs) == 1:
         t1_start = process_time() #tiempo inicial
         print('\nIniciando analizador...')
         analizer = controller.init()
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
-    elif int(inputs[0]) == 2:
+    elif int(inputs) == 2:
         t1_start = process_time() #tiempo inicial
         print('\nCargando los datos...')
         cont = controller.loadTrips(analizer)
@@ -108,7 +108,7 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
-    elif int(inputs[0]) == 3:
+    elif int(inputs) == 3:
         t1_start = process_time() #tiempo inicial
         estacion1 = (input('\nEscriba la identificación de la estación 1: '))
         estacion2 = (input('\nEscriba la identificación de la estación 2: '))
@@ -121,12 +121,12 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
-    elif int(inputs[0]) == 4:
+    elif int(inputs) == 4:
         t1_start = process_time() #tiempo inicial
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
         
-    elif int(inputs[0]) == 5: #conocer estaciones criticas
+    elif int(inputs) == 5: #conocer estaciones criticas
         t1_start = process_time() #tiempo inicial
         cont = controller.conocerEstacionesCriticas(analizer)
         print('\nLos nombres de las 3 estaciones Top de llegada son:')
@@ -147,7 +147,7 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
-    elif int(inputs[0]) == 6:
+    elif int(inputs) == 6:
         t1_start = process_time() #tiempo inicial
         tiempo = int(input('\nTiempo máximo en minutos de resitencia: '))
         id = input('\nCual es la identificación de la estacion de inicio: ')
@@ -163,7 +163,7 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
-    elif int(inputs[0]) == 7:
+    elif int(inputs) == 7:
         t1_start = process_time() #tiempo inicial
         print('En que rango de edad se encuentra el turista:')
         print('1) 0-10 años')
@@ -192,7 +192,7 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
     
-    elif int(inputs[0]) == 8:
+    elif int(inputs) == 8:
         t1_start = process_time() #tiempo inicial
         longitud_origen = float(input('\nIndique la longitud del punto de su ubicación actual: '))
         latitud_origen = float(input('\nIndique la latitud del punto de su ubicación actual: '))
@@ -215,16 +215,63 @@ while True:
         t1_stop = process_time() #tiempo final
         print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
     
-    elif int(inputs[0]) == 9:
+    elif int(inputs) == 9:
         t1_start = process_time() #tiempo inicial
-        t1_stop = process_time() #tiempo final
-        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+        print('En que rango de edad quiere analizar:')
+        print('1) 0-10 años')
+        print('2) 11-20 años')
+        print('3) 21-30 años')
+        print('4) 31-40 años')
+        print('5) 41-50 años')
+        print('6) 51-60 años')
+        print('7) 60+ años')
+        rango = int(input('\nIngrese el número: '))
+        datos = controller.identificar_estaciones_publicidad(analizer, rango)
+        if datos != None:
+            lista_mayor_inicio = datos[0]
+            lista_mayor_final = datos[1]
+            cant_mayor_inicio = datos[2]
+            cant_mayor_final = datos[3]
 
-    elif int(inputs[0]) == 10:
-        t1_start = process_time() #tiempo inicial
-        print(m.get(analizer['bicicletas'], 31956))
+            iterador_inicio = it.newIterator(lista_mayor_inicio)
+            print('\nLa o las estaciones que mas personas de este grupo de edad usan como origen son:')
+            print('')
+            while it.hasNext(iterador_inicio):
+                siguiente = it.next(iterador_inicio)
+                print(siguiente)
+            print('\nCon un total de '+str(cant_mayor_inicio), 'personas')
+
+            iterador_final = it.newIterator(lista_mayor_final)
+            print('\nLa o las estaciones que mas personas de este grupo de edad usan como destino son:')
+            print('')
+            while it.hasNext(iterador_final):
+                siguiente = it.next(iterador_final)
+                print(siguiente)
+            print('\nCon un total de '+str(cant_mayor_final), 'personas')
+
+
         t1_stop = process_time() #tiempo final
-        print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
+
+    elif int(inputs) == 10:
+        t1_start = process_time() #tiempo inicial
+        bikeid = int(input('\nEscriba el identificador de la bicicleta: '))
+        fecha = input('\nEscriba la fecha la cual quiere revisar (AAAA-MM-DD): ')
+        datos = controller.identificar_bicicleta(analizer, bikeid, fecha)
+        if datos != None:
+            print('\nEl tiempo total de uso de la bicicleta en el dia es: '+str(datos[0]))
+            print('\nEl tiempo total en el que estuvo estacionada la bicicleta la bicicleta es: ', str(datos[1]))
+            print('\nLas estaciones en las que estuvo la bicicleta son:')
+            print('')
+            iterador = it.newIterator(datos[2])
+            while it.hasNext(iterador):
+                siguiente = it.next(iterador)
+                print(siguiente)
+        else:
+            print('\nEl identificador de la bicleta o la fecha ingresada no existen.')
+        
+        t1_stop = process_time() #tiempo final
+        print("\nTiempo de ejecución",t1_stop-t1_start,"segundos\n")
 
     else:
         sys.exit(0)
