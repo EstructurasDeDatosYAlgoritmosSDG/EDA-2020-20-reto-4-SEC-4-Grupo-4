@@ -30,6 +30,7 @@ from DISClib.DataStructures import mapentry as me
 from DISClib.ADT import list as lt
 from DISClib.DataStructures import listiterator as it
 from DISClib.Algorithms.Graphs import scc
+from DISClib.Algorithms.Graphs import dfs
 from DISClib.Algorithms.Graphs import dijsktra as djk
 from DISClib.Utils import error as error
 assert config
@@ -64,6 +65,7 @@ def newAnalyzer():
         return analyzer
     except Exception as exp:
         error.reraise(exp, 'model:newAnalyzer')
+
 
 # Funciones para agregar informacion al grafo
 
@@ -281,10 +283,57 @@ def EstacionesCriticas(citybike):
 
     return (lista_entradas, lista_salidas, lista_peores)
 
+def tiempo(citybike, ruta):
+    lista = lt.newList()
+    cont = 0
+    i=1
+    while i< ruta.size():
+       dic = {'Estación_Salida': ruta[i-1],'Estación de llegada': ruta[i], "Duración": gr.getEdge(citybike['conecciones'],ruta[i-1], ruta[i])} 
+       i+=1
+       cont += dic["Duración"]
+       lt.addLast(lista, cont)
+    cont +=(lista.size()-2) * 20
+    return {"ruta": lista, "tiempo": cont}
+
+def rutas_ciclicas(citybike, source_id):
+
+    nearby = gr.adjacents(citybike['conecciones'], source_id)
+    iterador = it.newIterator(nearby)
+    rutas2=lt.newList(cmpfunction=compareroutes)
+    sc = scc.KosarajuSCC(citybike['conecciones'])
+    camino_final= lt.newList()
+
+    while it.hasNext(iterador):
+        next_iterator = it.next(iterador)
+        if(scc.stronglyConnected(sc,source_id,next_iterator)):
+            lt.addLast(rutas2, next_iterator)
+
+    iterador2= it.newIterator(rutas2)
+
+    while it.hasNext(iterador2):
+        next_iterator2 = it.next(iterador2)
+        rutas = lt.newList
+        lista_recorrido = dfs.DepthFirstSearch(citybike['conecciones'], next_iterator2)
+        recorrido = dfs.pathTo(lista_recorrido, source_id)
+        lt.addLast(rutas, source_id)
+
+    tam= recorrido.size()
+    z=0
+    while z < tam:
+        lt.addLast(camino_final, tiempo(recorrido[z], citybike['conecciones']))
+
+    return camino_final
+
+
+
+
+
 
 # ==============================
 # Funciones Helper
 # ==============================
+
+
 
 # ==============================
 # Funciones de Comparacion

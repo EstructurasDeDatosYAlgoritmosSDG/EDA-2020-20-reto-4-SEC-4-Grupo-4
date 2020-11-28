@@ -121,6 +121,9 @@ while True:
         t1_start = process_time() #tiempo inicial
         t1_stop = process_time() #tiempo final
         print("Tiempo de ejecución",t1_stop-t1_start,"segundos\n")
+        source_id= input('Por favor digite el id de la estación donde va a empezar su recorrido: ')
+        conexiones = controller.conexiones_source(analizer, source_id)
+        print(conexiones)
         
     elif int(inputs[0]) == 5: #conocer estaciones criticas
         t1_start = process_time() #tiempo inicial

@@ -104,3 +104,8 @@ def pertenecen_al_mismo_cluster(graph, estacion1, estacion2):
 def conocerEstacionesCriticas(citybike):
     lista = model.EstacionesCriticas(citybike)
     return lista
+
+
+def conexiones_source(citybike, source_id):
+    lista = model.rutas_ciclicas(citybike, source_id)
+    return lista 
